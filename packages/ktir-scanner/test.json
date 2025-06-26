@@ -1,0 +1,10 @@
+{
+  "unity": [
+    {
+      "className": "com.adreward.ktir.families.UnityIR",
+      "methodName": "onUnityAdsFinish",
+      "desc": "com.adreward.ktir.families.UnityIR.onUnityAdsFinish(String, FinishState)",
+      "kotlinSig": "com.adreward.ktir.families.UnityIR.onUnityAdsFinish"
+    }
+  ]
+}

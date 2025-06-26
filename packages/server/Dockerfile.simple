@@ -1,0 +1,32 @@
+FROM node:20-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    android-tools-adb \
+    openjdk-17-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy server file
+COPY packages/server/server.js ./
+
+# Create a simple package.json
+RUN echo '{"name":"adreward-server","version":"2.5.0","type":"module","dependencies":{"express":"^4.18.2","cors":"^2.8.5","helmet":"^7.1.0","morgan":"^1.10.0"}}' > package.json
+
+# Set up directories
+RUN mkdir -p /app/analysis /app/uploads
+
+# Install dependencies
+RUN npm install
+
+# Expose API port
+EXPOSE 3100
+
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=3100
+
+# Start the server
+CMD ["node", "server.js"] 

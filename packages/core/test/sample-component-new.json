@@ -1,0 +1,33 @@
+{
+  "admob": [
+    {
+      "className": "com.example.game.ads.RewardHandler",
+      "methodName": "onUserEarnedReward",
+      "desc": "(Lcom/google/android/gms/ads/rewarded/RewardItem;)V",
+      "kotlinSig": "RewardHandler.onUserEarnedReward"
+    },
+    {
+      "className": "com.example.game.ads.NewAdMobHandler",
+      "methodName": "processReward",
+      "desc": "(Lcom/google/android/gms/ads/rewarded/RewardItem;)V",
+      "kotlinSig": "NewAdMobHandler.processReward"
+    }
+  ],
+  "unity": [
+    {
+      "className": "com.example.game.ads.UnityAdsListener",
+      "methodName": "onUnityAdsFinish",
+      "desc": "(Ljava/lang/String;Lcom/unity3d/ads/UnityAds$FinishState;)V",
+      "kotlinSig": "UnityAdsListener.onUnityAdsFinish",
+      "file": "com/example/game/ads/UnityAdsListener.smali"
+    }
+  ],
+  "ironsource": [
+    {
+      "className": "com.example.game.ads.IronSourceListener",
+      "methodName": "onRewardedVideoAdOpened",
+      "desc": "()V",
+      "kotlinSig": "IronSourceListener.onRewardedVideoAdOpened"
+    }
+  ]
+} 

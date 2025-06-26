@@ -1,0 +1,90 @@
+// Self-invoking test module
+(function() {
+  console.log('--- Running auto-tests for hook validation ---');
+  
+  // Test function to validate hooks are properly registered
+  function testHooks() {
+    const results = {
+      totalHooks: 0,
+      successful: 0,
+      failed: 0,
+      notTested: 0,
+      details: []
+    };
+    
+    console.log('Starting hook verification...');
+    
+    {{#each hooks}}
+    // Test hooks for family: {{@key}}
+    console.log('Testing {{@key}} hooks...');
+    try {
+      {{#each this}}
+      try {
+        console.log('Validating hook: {{this.className}}.{{this.methodName}}');
+        
+        // Try to find and test the class
+        const TestClass = Java.use('{{this.className}}');
+        
+        // Check if the method exists and has an implementation
+        if (TestClass.{{this.methodName}} && TestClass.{{this.methodName}}.implementation) {
+          results.totalHooks++;
+          results.successful++;
+          results.details.push({
+            family: '{{@../key}}',
+            className: '{{this.className}}',
+            methodName: '{{this.methodName}}',
+            status: 'success'
+          });
+          console.log('✅ Hook validated: {{this.className}}.{{this.methodName}}');
+        } else {
+          results.totalHooks++;
+          results.notTested++;
+          results.details.push({
+            family: '{{@../key}}',
+            className: '{{this.className}}',
+            methodName: '{{this.methodName}}',
+            status: 'not-found',
+            error: 'Method not found or not hooked'
+          });
+          console.log('⚠️ Hook not found: {{this.className}}.{{this.methodName}}');
+        }
+      } catch (e) {
+        results.totalHooks++;
+        results.failed++;
+        results.details.push({
+          family: '{{@../key}}',
+          className: '{{this.className}}',
+          methodName: '{{this.methodName}}',
+          status: 'error',
+          error: e.message
+        });
+        console.log('❌ Hook error: {{this.className}}.{{this.methodName}} - ' + e.message);
+      }
+      {{/each}}
+    } catch (familyError) {
+      console.error('Error testing {{@key}} hooks:', familyError);
+    }
+    {{/each}}
+    
+    // Print test summary
+    console.log('--- Test Results ---');
+    console.log(`Total hooks: ${results.totalHooks}`);
+    console.log(`Successful: ${results.successful}`);
+    console.log(`Failed: ${results.failed}`);
+    console.log(`Not tested: ${results.notTested}`);
+    
+    // Send results to the host
+    send({
+      type: 'test-results',
+      results: results
+    });
+    
+    return results;
+  }
+  
+  // Run tests after a delay to allow app to initialize
+  setTimeout(function() {
+    console.log('Running automated tests...');
+    Java.perform(testHooks);
+  }, 2000);
+})(); 

@@ -1,0 +1,36 @@
+Java.perform(() => {
+  console.log('--- Injected ad-bypass script ---');
+
+  {{#each comps.admob}}
+  try {
+    const {{this.clazzVar}} = Java.use('{{this.className}}');
+    {{this.clazzVar}}.{{this.methodName}}.implementation = function(reward) {
+      console.log(`[BYPASS] {{this.methodName}} fired for class {{this.className}}`);
+      send({
+        family: 'admob',
+        className: '{{this.className}}',
+        methodName: '{{this.methodName}}',
+        action: 'trigger'
+      });
+      
+      // Try to call original, but also forge a reward as fallback
+      try {
+        this.{{this.methodName}}(reward);
+      } catch (e) {
+        console.log('Original method failed, forging a new reward item.');
+        const RewardItem = Java.use('com.google.android.gms.ads.rewarded.RewardItem');
+        const fakeReward = RewardItem.$new('Coins', 100);
+        this.{{this.methodName}}(fakeReward);
+      }
+    };
+  } catch (e) {
+    console.error(`Failed to hook admob method: {{this.className}}.{{this.methodName}}`, e.message);
+  }
+  {{/each}}
+
+  {{#each comps.unity}}
+  // Unity hooks here
+  {{/each}}
+  
+  // Add other families here...
+}); 

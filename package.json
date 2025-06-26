@@ -1,0 +1,46 @@
+{
+  "name": "adreward",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run -r build",
+    "test": "pnpm run -r test",
+    "lint": "pnpm run -r lint",
+    "clean": "pnpm run -r clean",
+    "docker:build": "pnpm docker:build:simple",
+    "docker:build:simple": "docker build -t adreward-server -f packages/server/Dockerfile.simple .",
+    "docker:build:full": "docker build -t adreward-server -f packages/server/Dockerfile .",
+    "docker:run": "docker run -p 3100:3100 --name adreward-server -d adreward-server",
+    "docker:stop": "docker stop adreward-server && docker rm adreward-server",
+    "server": "cd packages/server && node server.js",
+    "build:ktir": "cd packages/ktir-scanner && ./gradlew shadowJar && mkdir -p ../../jars && cp build/libs/ktir-scanner.jar ../../jars/",
+    "prepublishOnly": "pnpm run build:ktir && pnpm run build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/deep-diff": "^1.0.5",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.11",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.2",
+    "piscina": "^4.9.2",
+    "prettier": "^3.2.5",
+    "tapable": "^2.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "chokidar": "^4.0.3",
+    "deep-diff": "^1.0.2"
+  },
+  "version": "2.5.0",
+  "files": [
+    "packages/*/dist",
+    "packages/*/src",
+    "packages/*/package.json",
+    "jars"
+  ]
+}

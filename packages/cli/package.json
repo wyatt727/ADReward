@@ -1,0 +1,20 @@
+{
+  "name": "@adreward/cli",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "adreward": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@adreward/core": "workspace:*",
+    "@adreward/hooks-base": "workspace:*",
+    "commander": "^11.1.0",
+    "enquirer": "^2.4.1",
+    "update-notifier": "^7.0.0"
+  },
+  "devDependencies": {}
+} 
