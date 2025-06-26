@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { diffComponentFiles } from '../dist/diff.js';
+import { diffComponentFiles } from '../src/diff.js';
 import fs from 'fs';
 
 // Get paths to test files

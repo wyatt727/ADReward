@@ -122,82 +122,11 @@ export interface Plugin {
 }
 
 /**
- * Pipeline hooks for plugins to tap into
- */
-export const pipelineHooks = {
-  /**
-   * Called before APK acquisition
-   */
-  beforeAcquire: new AsyncSeriesHook<[AcquireContext]>(['acquireContext']),
-  
-  /**
-   * Called after APK acquisition with the APK path
-   */
-  afterAcquire: new AsyncSeriesHook<[AcquireContext, string]>(['acquireContext', 'apkPath']),
-  
-  /**
-   * Called before decompilation
-   */
-  beforeDecompile: new AsyncSeriesHook<[DecompileContext]>(['decompileContext']),
-  
-  /**
-   * Called after decompilation with the dex directory
-   */
-  afterDecompile: new AsyncSeriesHook<[DecompileContext, string]>(['decompileContext', 'dexDir']),
-  
-  /**
-   * Called before scanning
-   */
-  beforeScan: new AsyncSeriesHook<[ScanContext]>(['scanContext']),
-  
-  /**
-   * Called after scanning with the component map
-   */
-  afterScan: new AsyncSeriesHook<[ScanContext, ComponentMap]>(['scanContext', 'components']),
-  
-  /**
-   * Called before Frida script generation
-   */
-  beforeFridaGenerate: new AsyncSeriesHook<[FridaContext]>(['fridaContext']),
-  
-  /**
-   * Called after Frida script generation with the script and deploy paths
-   */
-  afterFridaGenerate: new AsyncSeriesHook<[FridaContext, { script: string, deploy: string }]>(
-    ['fridaContext', 'paths']
-  ),
-  
-  /**
-   * Called when a CLI program is created, allowing plugins to register commands
-   */
-  registerCommands: new SyncHook<[any]>(['program']),
-  
-  /**
-   * Called when an ad hook is detected during scanning
-   */
-  onAdDetected: new AsyncParallelHook<[{ family: string, className: string, methodName: string }]>(
-    ['adInfo']
-  ),
-};
-
-/**
  * Register plugin commands with the CLI program
  * @param program Commander program instance
  */
 export function registerPluginCommands(program: any): void {
   pipelineHooks.registerCommands.call(program);
-}
-
-/**
- * Plugin interface that plugins should implement
- */
-export interface Plugin {
-  /**
-   * Register the plugin with the pipeline hooks
-   * @param hooks The pipeline hooks
-   * @returns Plugin descriptor
-   */
-  register(hooks: PipelineHooks): PluginDescriptor;
 }
 
 /**
@@ -251,40 +180,33 @@ export class PipelineHooks {
   readonly registerCommands = new SyncHook<[any]>(['program']);
   
   /**
-   * Called when a hook detects an advertisement
+   * Called when an ad hook is detected during scanning
    */
   readonly onAdDetected = new AsyncParallelHook<[{ family: string, className: string, methodName: string }]>(['adInfo']);
   
   /**
    * Register a plugin
-   * @param plugin Plugin instance or module path
-   * @returns Promise that resolves with plugin descriptor
+   * @param plugin Plugin instance or path to plugin module
+   * @returns Plugin descriptor
    */
   async registerPlugin(plugin: Plugin | string): Promise<PluginDescriptor> {
     try {
-      let pluginInstance: Plugin;
-      
       // If plugin is a string, try to import it
       if (typeof plugin === 'string') {
-        try {
-          const imported = await import(plugin);
-          pluginInstance = imported.default as Plugin;
-          
-          if (!pluginInstance || typeof pluginInstance.register !== 'function') {
-            throw new Error(`Plugin at ${plugin} does not export a valid plugin as default export`);
-          }
-        } catch (error) {
-          logger.error(`Failed to load plugin at ${plugin}: ${error instanceof Error ? error.message : String(error)}`);
-          throw error;
+        const module = await import(plugin);
+        const pluginInstance = module.default || module;
+        
+        if (typeof pluginInstance.register !== 'function') {
+          throw new Error(`Plugin module ${plugin} does not export a valid plugin`);
         }
-      } else {
-        pluginInstance = plugin;
+        
+        return this.registerPlugin(pluginInstance);
       }
       
-      // Register the plugin
-      const descriptor = pluginInstance.register(this);
+      // Register the plugin with hooks
+      const descriptor = plugin.register(this);
       
-      logger.info(`Plugin registered: ${descriptor.name} v${descriptor.version}`);
+      logger.info(`Registered plugin: ${descriptor.name} v${descriptor.version}`);
       logger.debug(`Plugin description: ${descriptor.description}`);
       
       return descriptor;
@@ -296,6 +218,6 @@ export class PipelineHooks {
 }
 
 /**
- * Singleton instance of the pipeline hooks
+ * Singleton instance of PipelineHooks
  */
 export const pipelineHooks = new PipelineHooks(); 

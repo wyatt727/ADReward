@@ -13,6 +13,9 @@ Handlebars.registerHelper('json', (obj) => JSON.stringify(obj));
 // Load the Frida script template
 const TEMPLATE_PATH = new URL('./templates/frida.hbs', import.meta.url);
 const DEFAULT_TEMPLATE = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+// Add the test template
+const TEST_TEMPLATE_PATH = new URL('./templates/frida-test.hbs', import.meta.url);
+const TEST_TEMPLATE = fs.readFileSync(TEST_TEMPLATE_PATH, 'utf8');
 /**
  * Ensure that Frida server is running on the target device.
  * This will check if Frida server is already running, and if not,
@@ -134,6 +137,12 @@ export async function generateFrida(pkg, components, outDir, options = {}) {
             hooks: components,
             addTests: options.addTests
         });
+        // If tests are enabled, append the test template
+        if (options.addTests) {
+            logger.info('Adding self-invoking test stubs to Frida script');
+            const compileTestTpl = Handlebars.compile(TEST_TEMPLATE);
+            scriptContent += '\n\n' + compileTestTpl({ hooks: components });
+        }
         // Store in context for hooks
         fridaContext.scriptContent = scriptContent;
     }

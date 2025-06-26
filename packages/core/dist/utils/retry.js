@@ -1,108 +1,120 @@
 import { logger } from './logger.js';
 /**
- * Default retry options
+ * Common retry configurations for different types of operations
  */
-const defaultOptions = {
-    retries: 3,
-    initialDelay: 1000,
-    backoffFactor: 2,
-    maxDelay: 30000,
-    retryableError: () => true,
-    logRetries: true
-};
-/**
- * Retry patterns for common operations
- */
-export const retryPatterns = {
+export const retryConfigs = {
     /**
-     * Retry pattern for network operations
+     * Configuration for network operations (3 attempts, 1s initial delay)
      */
     network: {
-        retries: 3,
-        initialDelay: 1000,
-        backoffFactor: 2,
-        maxDelay: 10000,
-        retryableError: (error) => {
-            // Network errors are often transient
-            const message = error?.message?.toLowerCase() || '';
-            return message.includes('network') ||
-                message.includes('timeout') ||
-                message.includes('econnrefused') ||
-                message.includes('econnreset');
+        attempts: 3,
+        initialDelay: 1000, // 1 second initial delay
+        backoffFactor: 2, // Double the delay on each retry
+        isRetryable: (error) => {
+            // Network errors that should be retried
+            return error.message.includes('ECONNRESET') ||
+                error.message.includes('ETIMEDOUT') ||
+                error.message.includes('ENOTFOUND') ||
+                error.message.includes('ECONNREFUSED') ||
+                error.message.includes('EHOSTUNREACH');
         }
     },
     /**
-     * Retry pattern for ADB operations
+     * Configuration for ADB operations (3 attempts, 2s initial delay)
      */
     adb: {
-        retries: 3,
-        initialDelay: 2000,
-        backoffFactor: 1.5,
-        maxDelay: 10000,
-        retryableError: (error) => {
-            // ADB errors that might be temporary
-            const message = error?.message?.toLowerCase() || '';
-            return message.includes('device') ||
-                message.includes('offline') ||
-                message.includes('unauthorized') ||
-                message.includes('timeout');
+        attempts: 3,
+        initialDelay: 2000, // 2 second initial delay
+        backoffFactor: 2, // Double the delay on each retry
+        isRetryable: (error) => {
+            // ADB errors that are worth retrying
+            return error.message.includes('device offline') ||
+                error.message.includes('device not found') ||
+                error.message.includes('device unauthorized') ||
+                error.message.includes('connection refused') ||
+                error.message.includes('transport endpoint is not connected');
         }
     },
     /**
-     * Retry pattern for Java tool operations
+     * Configuration for Java executions (2 attempts, 1s initial delay)
      */
     java: {
-        retries: 2,
-        initialDelay: 1000,
-        backoffFactor: 2,
-        maxDelay: 5000,
-        retryableError: (error) => {
-            // Java errors that might be retryable
-            const message = error?.message?.toLowerCase() || '';
-            return message.includes('out of memory') ||
-                message.includes('timeout');
+        attempts: 2,
+        initialDelay: 1000, // 1 second initial delay
+        backoffFactor: 2, // Double the delay on each retry
+        isRetryable: (error) => {
+            // Java errors that are worth retrying (class loading, OOM)
+            return error.message.includes('ClassNotFoundException') ||
+                error.message.includes('OutOfMemoryError') ||
+                error.message.includes('Could not reserve enough space');
         }
     }
 };
 /**
  * Retry a function with exponential backoff
  * @param fn Function to retry
- * @param options Retry options
- * @returns Result of the function
+ * @param options Retry options or predefined pattern
+ * @returns Promise with the function result
  */
-export async function retry(fn, options = {}) {
-    const opts = { ...defaultOptions, ...options };
-    let lastError;
-    for (let attempt = 1; attempt <= opts.retries + 1; attempt++) {
+export async function retry(fn, options) {
+    let lastError = null;
+    let delay = options.initialDelay;
+    for (let attempt = 1; attempt <= options.attempts; attempt++) {
         try {
             return await fn();
         }
         catch (error) {
             lastError = error;
             // Check if error is retryable
-            if (!opts.retryableError(error)) {
-                if (opts.logRetries) {
-                    logger.debug(`Non-retryable error: ${error instanceof Error ? error.message : String(error)}`);
-                }
-                throw error;
+            if (options.isRetryable && !options.isRetryable(lastError)) {
+                logger.debug(`Error not retryable: ${lastError.message}`);
+                throw lastError;
             }
-            // Check if we've used all retries
-            if (attempt > opts.retries) {
-                if (opts.logRetries) {
-                    logger.warn(`All ${opts.retries} retry attempts failed, giving up`);
-                }
-                throw error;
+            // Last attempt - give up
+            if (attempt === options.attempts) {
+                logger.debug(`Retry exhausted after ${options.attempts} attempts: ${lastError.message}`);
+                throw lastError;
             }
-            // Calculate backoff delay
-            const delay = Math.min(opts.initialDelay * Math.pow(opts.backoffFactor, attempt - 1), opts.maxDelay);
-            if (opts.logRetries) {
-                logger.info(`Retry attempt ${attempt}/${opts.retries} after ${delay}ms: ${error instanceof Error ? error.message : String(error)}`);
-            }
-            // Wait for the backoff period
+            // Log and retry after delay
+            logger.debug(`Attempt ${attempt} failed, retrying in ${delay}ms: ${lastError.message}`);
             await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= options.backoffFactor;
         }
     }
     // This should never happen due to the throw in the loop
-    throw lastError;
+    throw lastError || new Error('Unknown error in retry');
 }
+/**
+ * Callable retry patterns
+ * These functions wrap the retry function with predefined configurations
+ */
+export const retryPatterns = {
+    /**
+     * Retry a function with the network pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    network: (fn) => retry(fn, retryConfigs.network),
+    /**
+     * Retry a function with the ADB pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    adb: (fn) => retry(fn, retryConfigs.adb),
+    /**
+     * Retry a function with the Java pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    java: (fn) => retry(fn, retryConfigs.java)
+};
+/**
+ * Backward compatibility function for retryOperation usage
+ * @param fn Function to retry
+ * @param options Retry options
+ * @returns Promise with the function result
+ */
+export const retryOperation = retry;
+// Export retryPatterns as default for convenient import
+export default retryPatterns;
 //# sourceMappingURL=retry.js.map

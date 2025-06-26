@@ -1,4 +1,4 @@
-import { retry } from '../src/utils/retry.js';
+import { retry, retryPatternsFn as retryPatterns } from '../src/utils/retry.js';
 
 describe('Retry helper', () => {
   it('should resolve immediately when function succeeds', async () => {
@@ -55,21 +55,21 @@ describe('Retry helper', () => {
   
   it('should use network retry pattern', async () => {
     const fn = jest.fn().mockResolvedValue('success');
-    await retry.network(fn);
+    await retryPatterns.network(fn);
     
     expect(fn).toHaveBeenCalledTimes(1);
   });
   
   it('should use adb retry pattern', async () => {
     const fn = jest.fn().mockResolvedValue('success');
-    await retry.adb(fn);
+    await retryPatterns.adb(fn);
     
     expect(fn).toHaveBeenCalledTimes(1);
   });
   
   it('should use java retry pattern', async () => {
     const fn = jest.fn().mockResolvedValue('success');
-    await retry.java(fn);
+    await retryPatterns.java(fn);
     
     expect(fn).toHaveBeenCalledTimes(1);
   });

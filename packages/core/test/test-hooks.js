@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+// Use module name mapper pattern that will be resolved by Jest
 import * as admob from '@adreward/hooks-base/admob';
 import * as unity from '@adreward/hooks-base/unity';
 

@@ -135,4 +135,5 @@ router.post('/upload', upload.single('apk'), async (req, res, next) => {
   }
 });
 
-export const apkRouter = router; 
+// Export the router
+export const apkRouter: import('express').Router = router; 

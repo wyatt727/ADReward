@@ -2,70 +2,83 @@
  * Options for retry operations
  */
 export interface RetryOptions {
-    /**
-     * Number of retry attempts
-     */
-    retries?: number;
-    /**
-     * Initial delay in milliseconds
-     */
-    initialDelay?: number;
-    /**
-     * Backoff factor for exponential backoff
-     */
-    backoffFactor?: number;
-    /**
-     * Maximum delay in milliseconds
-     */
-    maxDelay?: number;
-    /**
-     * Function to determine if an error is retryable
-     */
-    retryableError?: (error: any) => boolean;
-    /**
-     * Whether to log retry attempts
-     */
-    logRetries?: boolean;
+    /** Maximum number of retry attempts */
+    attempts: number;
+    /** Initial delay between retries in milliseconds */
+    initialDelay: number;
+    /** Factor to multiply delay by after each attempt */
+    backoffFactor: number;
+    /** Optional filter function to determine if an error is retryable */
+    isRetryable?: (error: Error) => boolean;
 }
 /**
- * Retry patterns for common operations
+ * Common retry configurations for different types of operations
  */
-export declare const retryPatterns: {
+export declare const retryConfigs: {
     /**
-     * Retry pattern for network operations
+     * Configuration for network operations (3 attempts, 1s initial delay)
      */
     network: {
-        retries: number;
+        attempts: number;
         initialDelay: number;
         backoffFactor: number;
-        maxDelay: number;
-        retryableError: (error: any) => any;
+        isRetryable: (error: Error) => boolean;
     };
     /**
-     * Retry pattern for ADB operations
+     * Configuration for ADB operations (3 attempts, 2s initial delay)
      */
     adb: {
-        retries: number;
+        attempts: number;
         initialDelay: number;
         backoffFactor: number;
-        maxDelay: number;
-        retryableError: (error: any) => any;
+        isRetryable: (error: Error) => boolean;
     };
     /**
-     * Retry pattern for Java tool operations
+     * Configuration for Java executions (2 attempts, 1s initial delay)
      */
     java: {
-        retries: number;
+        attempts: number;
         initialDelay: number;
         backoffFactor: number;
-        maxDelay: number;
-        retryableError: (error: any) => any;
+        isRetryable: (error: Error) => boolean;
     };
 };
 /**
  * Retry a function with exponential backoff
  * @param fn Function to retry
- * @param options Retry options
- * @returns Result of the function
+ * @param options Retry options or predefined pattern
+ * @returns Promise with the function result
  */
-export declare function retry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T>;
+export declare function retry<T>(fn: () => Promise<T>, options: RetryOptions): Promise<T>;
+/**
+ * Callable retry patterns
+ * These functions wrap the retry function with predefined configurations
+ */
+export declare const retryPatterns: {
+    /**
+     * Retry a function with the network pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    network: <T>(fn: () => Promise<T>) => Promise<T>;
+    /**
+     * Retry a function with the ADB pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    adb: <T>(fn: () => Promise<T>) => Promise<T>;
+    /**
+     * Retry a function with the Java pattern
+     * @param fn Function to retry
+     * @returns Promise with the function result
+     */
+    java: <T>(fn: () => Promise<T>) => Promise<T>;
+};
+/**
+ * Backward compatibility function for retryOperation usage
+ * @param fn Function to retry
+ * @param options Retry options
+ * @returns Promise with the function result
+ */
+export declare const retryOperation: typeof retry;
+export default retryPatterns;

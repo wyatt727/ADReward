@@ -5,6 +5,7 @@ import { logger } from './logger.js';
  * Worker pool implementation using Piscina
  */
 class WorkerPool {
+    // @ts-ignore - Ignore Piscina type errors
     pool = null;
     workerId = 0;
     totalJobs = 0;
@@ -20,70 +21,61 @@ class WorkerPool {
             throw new Error('Worker pool already initialized');
         }
         // Determine number of threads - limit to CPU count or 8, whichever is smaller
-        const numThreads = Math.min(os.cpus().length, 8);
-        logger.debug(`Initializing worker pool with ${numThreads} threads`);
+        const threads = Math.min(os.cpus().length, 8);
+        logger.debug(`Initializing worker pool with ${threads} threads`);
+        this.workerId = 0;
+        this.totalJobs = 0;
+        this.completedJobs = 0;
+        this.startTime = Date.now();
+        // Create the worker pool
+        // @ts-ignore - Ignore Piscina type errors
         this.pool = new Piscina({
             filename,
             minThreads: 1,
-            maxThreads: numThreads
+            maxThreads: threads
         });
-        this.startTime = Date.now();
         return this.pool;
     }
     /**
      * Run a task in the worker pool
      * @param data Data to pass to the worker
-     * @returns Promise that resolves with the worker result
+     * @returns Promise with worker result
      */
     async run(data) {
         if (!this.pool) {
             throw new Error('Worker pool not initialized');
         }
-        const jobId = ++this.workerId;
+        const id = ++this.workerId;
         this.totalJobs++;
         try {
-            logger.debug(`Starting worker job #${jobId}`);
-            const result = await this.pool.run(data);
-            logger.debug(`Completed worker job #${jobId}`);
+            logger.debug(`Running worker task #${id}`);
+            const result = await this.pool.run(data, { name: 'default' });
             this.completedJobs++;
             return result;
         }
         catch (error) {
-            logger.error(`Worker job #${jobId} failed: ${error}`);
-            this.completedJobs++;
+            logger.error(`Worker task #${id} failed: ${error}`);
             throw error;
         }
     }
     /**
-     * Get the worker pool utilization percentage
-     * @returns Utilization percentage (0-1)
+     * Shutdown the worker pool
      */
-    getUtilization() {
-        if (!this.pool || this.totalJobs === 0 || this.startTime === 0) {
-            return 0;
+    async shutdown() {
+        if (!this.pool) {
+            return;
         }
-        const runTime = Date.now() - this.startTime;
-        if (runTime === 0) {
-            return 0;
-        }
-        const maxPotentialThroughput = this.pool.options.maxThreads * runTime;
-        const actualUsage = this.totalJobs * (runTime / this.completedJobs);
-        return Math.min(actualUsage / maxPotentialThroughput, 1);
-    }
-    /**
-     * Destroy the worker pool
-     */
-    async destroy() {
-        if (this.pool) {
+        try {
+            const elapsedTime = ((Date.now() - this.startTime) / 1000).toFixed(2);
+            logger.info(`Worker pool stats: ${this.completedJobs}/${this.totalJobs} jobs completed in ${elapsedTime}s`);
             await this.pool.destroy();
             this.pool = null;
-            this.workerId = 0;
-            this.totalJobs = 0;
-            this.completedJobs = 0;
-            this.startTime = 0;
-            logger.debug('Worker pool destroyed');
+        }
+        catch (error) {
+            logger.error(`Error shutting down worker pool: ${error}`);
         }
     }
 }
+// Export singleton instance
 export const workerPool = new WorkerPool();
 //# sourceMappingURL=workerPool.js.map

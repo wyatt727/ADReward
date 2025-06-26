@@ -1,6 +1,6 @@
 import { execa, ExecaChildProcess } from 'execa';
 import { logger } from './utils/logger.js';
-import { retryPatternsFn } from './utils/retry.js';
+import { retryPatterns } from './utils/retry.js';
 
 /**
  * List all connected ADB devices.
@@ -9,7 +9,7 @@ import { retryPatternsFn } from './utils/retry.js';
  * @returns Promise that resolves with array of device IDs
  */
 export async function listDevices(): Promise<string[]> {
-  return retryPatternsFn.adb(async () => {
+  return retryPatterns.adb(async () => {
     const { stdout } = await execa('adb', ['devices']);
     const devices = stdout.split('\n')
       .filter(l => /\tdevice$/.test(l))
@@ -29,7 +29,7 @@ export async function listDevices(): Promise<string[]> {
  * @throws Error if no devices are found or the preferred device isn't connected
  */
 export async function requireDevice(preferred?: string): Promise<string> {
-  return retryPatternsFn.adb(async () => {
+  return retryPatterns.adb(async () => {
     const devs = await listDevices();
     if (!devs.length) {
       throw new Error('No ADB devices online. Connect a device or start an emulator and try again.');
@@ -61,7 +61,7 @@ export async function execAdb(device: string, cmd: string, opts = {}): Promise<E
   
   logger.debug(`Executing ADB command: ${cmd} on device ${device}`);
   
-  return retryPatternsFn.adb(async () => {
+  return retryPatterns.adb(async () => {
     try {
       return await execa('adb', ['-s', device, cmdName, ...args], opts);
     } catch (error) {

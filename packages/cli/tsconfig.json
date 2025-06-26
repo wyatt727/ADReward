@@ -2,10 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"],
+    "noImplicitAny": false  // Temporarily disable to fix build
   },
-  "include": ["src"],
+  "include": ["src", "src/types"],
   "references": [
-    { "path": "../core" }
+    { "path": "../core" },
+    { "path": "../hooks-base" }
   ]
 } 

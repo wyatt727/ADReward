@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { glob } from 'fast-glob';
+import fastGlob from 'fast-glob';
+const { glob } = fastGlob;
 import { logger } from './utils/logger.js';
 import { pipelineHooks, Plugin, PluginDescriptor } from './hooks.js';
 

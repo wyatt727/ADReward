@@ -18,18 +18,18 @@ export interface RetryOptions {
 }
 
 /**
- * Common retry patterns for different types of operations
+ * Common retry configurations for different types of operations
  */
-export const retryPatterns = {
+export const retryConfigs = {
   /**
-   * Pattern for network operations (3 attempts, 1s initial delay)
+   * Configuration for network operations (3 attempts, 1s initial delay)
    */
   network: {
     attempts: 3,
-    initialDelay: 1000,
-    backoffFactor: 2,
-    isRetryable: (error: Error) => {
-      // Network errors are generally retryable
+    initialDelay: 1000,  // 1 second initial delay
+    backoffFactor: 2,    // Double the delay on each retry
+    isRetryable: (error: Error): boolean => {
+      // Network errors that should be retried
       return error.message.includes('ECONNRESET') ||
         error.message.includes('ETIMEDOUT') ||
         error.message.includes('ENOTFOUND') ||
@@ -39,13 +39,13 @@ export const retryPatterns = {
   },
   
   /**
-   * Pattern for ADB operations (3 attempts, 2s initial delay)
+   * Configuration for ADB operations (3 attempts, 2s initial delay)
    */
   adb: {
     attempts: 3,
-    initialDelay: 2000,
-    backoffFactor: 2,
-    isRetryable: (error: Error) => {
+    initialDelay: 2000,  // 2 second initial delay
+    backoffFactor: 2,    // Double the delay on each retry
+    isRetryable: (error: Error): boolean => {
       // ADB errors that are worth retrying
       return error.message.includes('device offline') ||
         error.message.includes('device not found') ||
@@ -56,13 +56,13 @@ export const retryPatterns = {
   },
   
   /**
-   * Pattern for Java executions (2 attempts, 1s initial delay)
+   * Configuration for Java executions (2 attempts, 1s initial delay)
    */
   java: {
     attempts: 2,
-    initialDelay: 1000,
-    backoffFactor: 2,
-    isRetryable: (error: Error) => {
+    initialDelay: 1000,  // 1 second initial delay
+    backoffFactor: 2,    // Double the delay on each retry
+    isRetryable: (error: Error): boolean => {
       // Java errors that are worth retrying (class loading, OOM)
       return error.message.includes('ClassNotFoundException') ||
         error.message.includes('OutOfMemoryError') ||
@@ -111,30 +111,30 @@ export async function retry<T>(fn: () => Promise<T>, options: RetryOptions): Pro
 }
 
 /**
- * Wrapper functions to make retry pattern usage simpler.
- * Allows calling retryPatterns.xxx(fn) directly.
+ * Callable retry patterns
+ * These functions wrap the retry function with predefined configurations
  */
-export const retryPatternsFn = {
+export const retryPatterns = {
   /**
    * Retry a function with the network pattern
    * @param fn Function to retry
    * @returns Promise with the function result
    */
-  network: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryPatterns.network),
+  network: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryConfigs.network),
   
   /**
    * Retry a function with the ADB pattern
    * @param fn Function to retry
    * @returns Promise with the function result
    */
-  adb: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryPatterns.adb),
+  adb: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryConfigs.adb),
   
   /**
    * Retry a function with the Java pattern
    * @param fn Function to retry
    * @returns Promise with the function result
    */
-  java: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryPatterns.java)
+  java: <T>(fn: () => Promise<T>): Promise<T> => retry(fn, retryConfigs.java)
 };
 
 /**
@@ -145,5 +145,5 @@ export const retryPatternsFn = {
  */
 export const retryOperation = retry;
 
-// Export retryPatternsFn as default for convenient import
-export default retryPatternsFn; 
+// Export retryPatterns as default for convenient import
+export default retryPatterns; 

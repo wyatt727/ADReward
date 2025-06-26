@@ -12,22 +12,17 @@ declare class WorkerPool {
      * @param filename Path to the worker script
      * @returns The initialized pool
      */
-    initialize(filename: string): Piscina;
+    initialize(filename: string): any;
     /**
      * Run a task in the worker pool
      * @param data Data to pass to the worker
-     * @returns Promise that resolves with the worker result
+     * @returns Promise with worker result
      */
     run<T, R>(data: T): Promise<R>;
     /**
-     * Get the worker pool utilization percentage
-     * @returns Utilization percentage (0-1)
+     * Shutdown the worker pool
      */
-    getUtilization(): number;
-    /**
-     * Destroy the worker pool
-     */
-    destroy(): Promise<void>;
+    shutdown(): Promise<void>;
 }
 export declare const workerPool: WorkerPool;
 export {};

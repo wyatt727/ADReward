@@ -105,73 +105,10 @@ export interface Plugin {
     register(hooks: PipelineHooks): PluginDescriptor;
 }
 /**
- * Pipeline hooks for plugins to tap into
- */
-export declare const pipelineHooks: {
-    /**
-     * Called before APK acquisition
-     */
-    beforeAcquire: AsyncSeriesHook<[AcquireContext], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called after APK acquisition with the APK path
-     */
-    afterAcquire: AsyncSeriesHook<[AcquireContext, string], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called before decompilation
-     */
-    beforeDecompile: AsyncSeriesHook<[DecompileContext], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called after decompilation with the dex directory
-     */
-    afterDecompile: AsyncSeriesHook<[DecompileContext, string], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called before scanning
-     */
-    beforeScan: AsyncSeriesHook<[ScanContext], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called after scanning with the component map
-     */
-    afterScan: AsyncSeriesHook<[ScanContext, ComponentMap], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called before Frida script generation
-     */
-    beforeFridaGenerate: AsyncSeriesHook<[FridaContext], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called after Frida script generation with the script and deploy paths
-     */
-    afterFridaGenerate: AsyncSeriesHook<[FridaContext, {
-        script: string;
-        deploy: string;
-    }], import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called when a CLI program is created, allowing plugins to register commands
-     */
-    registerCommands: SyncHook<[any], void, import("tapable").UnsetAdditionalOptions>;
-    /**
-     * Called when an ad hook is detected during scanning
-     */
-    onAdDetected: AsyncParallelHook<[{
-        family: string;
-        className: string;
-        methodName: string;
-    }], import("tapable").UnsetAdditionalOptions>;
-};
-/**
  * Register plugin commands with the CLI program
  * @param program Commander program instance
  */
 export declare function registerPluginCommands(program: any): void;
-/**
- * Plugin interface that plugins should implement
- */
-export interface Plugin {
-    /**
-     * Register the plugin with the pipeline hooks
-     * @param hooks The pipeline hooks
-     * @returns Plugin descriptor
-     */
-    register(hooks: PipelineHooks): PluginDescriptor;
-}
 /**
  * Pipeline hooks that plugins can tap into
  */
@@ -217,7 +154,7 @@ export declare class PipelineHooks {
      */
     readonly registerCommands: SyncHook<[any], void, import("tapable").UnsetAdditionalOptions>;
     /**
-     * Called when a hook detects an advertisement
+     * Called when an ad hook is detected during scanning
      */
     readonly onAdDetected: AsyncParallelHook<[{
         family: string;
@@ -226,12 +163,12 @@ export declare class PipelineHooks {
     }], import("tapable").UnsetAdditionalOptions>;
     /**
      * Register a plugin
-     * @param plugin Plugin instance or module path
-     * @returns Promise that resolves with plugin descriptor
+     * @param plugin Plugin instance or path to plugin module
+     * @returns Plugin descriptor
      */
     registerPlugin(plugin: Plugin | string): Promise<PluginDescriptor>;
 }
 /**
- * Singleton instance of the pipeline hooks
+ * Singleton instance of PipelineHooks
  */
 export declare const pipelineHooks: PipelineHooks;

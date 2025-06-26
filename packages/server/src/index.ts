@@ -6,7 +6,7 @@ import { logger } from '@adreward/core';
 import { apkRouter } from './routes/apk.js';
 import { scanRouter } from './routes/scan.js';
 import { fridaRouter } from './routes/frida.js';
-import { healthRouter } from './routes/health.js';
+import healthRouter from './routes/health.js';
 
 const DEFAULT_PORT = 3100;
 

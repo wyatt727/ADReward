@@ -151,4 +151,5 @@ router.get('/script/:packageName', async (req, res, next) => {
   }
 });
 
-export const fridaRouter = router; 
+// Export the router
+export const fridaRouter: import('express').Router = router; 

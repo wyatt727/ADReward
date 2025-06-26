@@ -8,7 +8,7 @@ export * from './utils/logger.js';
 export * from './utils/misc.js';
 export * from './utils/timing.js';
 export * from './utils/retry.js';
-export * from './hooks.js';
+export { Plugin, PluginDescriptor, PipelineHooks, pipelineHooks, registerPluginCommands, ScanContext, DecompileContext, AcquireContext, FridaContext } from './hooks.js';
 export * from './pluginLoader.js';
 export * from './watch.js';
 export * from './diff.js';

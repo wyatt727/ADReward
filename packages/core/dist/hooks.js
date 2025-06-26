@@ -1,51 +1,6 @@
 import { AsyncSeriesHook, AsyncParallelHook, SyncHook } from 'tapable';
 import { logger } from './utils/logger.js';
 /**
- * Pipeline hooks for plugins to tap into
- */
-export const pipelineHooks = {
-    /**
-     * Called before APK acquisition
-     */
-    beforeAcquire: new AsyncSeriesHook(['acquireContext']),
-    /**
-     * Called after APK acquisition with the APK path
-     */
-    afterAcquire: new AsyncSeriesHook(['acquireContext', 'apkPath']),
-    /**
-     * Called before decompilation
-     */
-    beforeDecompile: new AsyncSeriesHook(['decompileContext']),
-    /**
-     * Called after decompilation with the dex directory
-     */
-    afterDecompile: new AsyncSeriesHook(['decompileContext', 'dexDir']),
-    /**
-     * Called before scanning
-     */
-    beforeScan: new AsyncSeriesHook(['scanContext']),
-    /**
-     * Called after scanning with the component map
-     */
-    afterScan: new AsyncSeriesHook(['scanContext', 'components']),
-    /**
-     * Called before Frida script generation
-     */
-    beforeFridaGenerate: new AsyncSeriesHook(['fridaContext']),
-    /**
-     * Called after Frida script generation with the script and deploy paths
-     */
-    afterFridaGenerate: new AsyncSeriesHook(['fridaContext', 'paths']),
-    /**
-     * Called when a CLI program is created, allowing plugins to register commands
-     */
-    registerCommands: new SyncHook(['program']),
-    /**
-     * Called when an ad hook is detected during scanning
-     */
-    onAdDetected: new AsyncParallelHook(['adInfo']),
-};
-/**
  * Register plugin commands with the CLI program
  * @param program Commander program instance
  */
@@ -94,37 +49,28 @@ export class PipelineHooks {
      */
     registerCommands = new SyncHook(['program']);
     /**
-     * Called when a hook detects an advertisement
+     * Called when an ad hook is detected during scanning
      */
     onAdDetected = new AsyncParallelHook(['adInfo']);
     /**
      * Register a plugin
-     * @param plugin Plugin instance or module path
-     * @returns Promise that resolves with plugin descriptor
+     * @param plugin Plugin instance or path to plugin module
+     * @returns Plugin descriptor
      */
     async registerPlugin(plugin) {
         try {
-            let pluginInstance;
             // If plugin is a string, try to import it
             if (typeof plugin === 'string') {
-                try {
-                    const imported = await import(plugin);
-                    pluginInstance = imported.default;
-                    if (!pluginInstance || typeof pluginInstance.register !== 'function') {
-                        throw new Error(`Plugin at ${plugin} does not export a valid plugin as default export`);
-                    }
+                const module = await import(plugin);
+                const pluginInstance = module.default || module;
+                if (typeof pluginInstance.register !== 'function') {
+                    throw new Error(`Plugin module ${plugin} does not export a valid plugin`);
                 }
-                catch (error) {
-                    logger.error(`Failed to load plugin at ${plugin}: ${error instanceof Error ? error.message : String(error)}`);
-                    throw error;
-                }
+                return this.registerPlugin(pluginInstance);
             }
-            else {
-                pluginInstance = plugin;
-            }
-            // Register the plugin
-            const descriptor = pluginInstance.register(this);
-            logger.info(`Plugin registered: ${descriptor.name} v${descriptor.version}`);
+            // Register the plugin with hooks
+            const descriptor = plugin.register(this);
+            logger.info(`Registered plugin: ${descriptor.name} v${descriptor.version}`);
             logger.debug(`Plugin description: ${descriptor.description}`);
             return descriptor;
         }
@@ -135,7 +81,7 @@ export class PipelineHooks {
     }
 }
 /**
- * Singleton instance of the pipeline hooks
+ * Singleton instance of PipelineHooks
  */
 export const pipelineHooks = new PipelineHooks();
 //# sourceMappingURL=hooks.js.map

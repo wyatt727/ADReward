@@ -135,7 +135,7 @@ class QueueSystem {
       stats[type as JobType] = {
         pending: queue.pending,
         size: queue.size,
-        isIdle: queue.idle
+        isIdle: queue.pending === 0 && queue.size === 0
       };
       return stats;
     }, {} as Record<JobType, { pending: number, size: number, isIdle: boolean }>);

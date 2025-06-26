@@ -22,7 +22,6 @@ class UnityIR : HookFamily {
     
     override fun matcher(declaration: IrFunction): Boolean {
         val methodName = declaration.name.toString()
-        val parentClass = declaration.parent.toString()
         
         // Check for legacy callback: onUnityAdsFinish
         if (methodName == "onUnityAdsFinish") {

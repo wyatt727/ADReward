@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import path from 'path';
 import fs from 'fs/promises';
+import * as fsSync from 'fs'; // Rename to avoid conflict with fs/promises
 import { fileURLToPath } from 'url';
 import { watchFridaScript } from '../dist/watch.js';
-import fs from 'fs';
 import { watch } from '../src/watch.js';
 import EventEmitter from 'events';
 
@@ -87,7 +87,7 @@ describe('Watch mode functionality', () => {
   
   beforeEach(() => {
     // Create a temporary script file for testing
-    fs.writeFileSync(tempScriptPath, 'console.log("Initial script");');
+    fsSync.writeFileSync(tempScriptPath, 'console.log("Initial script");');
     
     // Reset mocks
     jest.clearAllMocks();
@@ -95,8 +95,8 @@ describe('Watch mode functionality', () => {
   
   afterEach(() => {
     // Clean up temporary file
-    if (fs.existsSync(tempScriptPath)) {
-      fs.unlinkSync(tempScriptPath);
+    if (fsSync.existsSync(tempScriptPath)) {
+      fsSync.unlinkSync(tempScriptPath);
     }
   });
   
@@ -129,7 +129,7 @@ describe('Watch mode functionality', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Modify the script file
-    fs.writeFileSync(tempScriptPath, 'console.log("Modified script");');
+    fsSync.writeFileSync(tempScriptPath, 'console.log("Modified script");');
     
     // Wait for the file change to be detected
     await new Promise(resolve => setTimeout(resolve, 300));

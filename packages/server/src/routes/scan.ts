@@ -202,4 +202,5 @@ router.get('/results/:jobId', async (req, res, next) => {
   }
 });
 
-export const scanRouter = router; 
+// Export the router
+export const scanRouter: import('express').Router = router; 

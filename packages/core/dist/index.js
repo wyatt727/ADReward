@@ -8,7 +8,8 @@ export * from './utils/logger.js';
 export * from './utils/misc.js';
 export * from './utils/timing.js';
 export * from './utils/retry.js';
-export * from './hooks.js';
+// Selective export from hooks.js to avoid duplicate export issues
+export { PipelineHooks, pipelineHooks, registerPluginCommands } from './hooks.js';
 export * from './pluginLoader.js';
 export * from './watch.js';
 export * from './diff.js';

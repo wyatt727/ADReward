@@ -23,7 +23,7 @@ import { fileURLToPath } from 'url';
 
 // Find package.json to get version
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pkgPath = path.resolve(__dirname, '../../package.json');
+const pkgPath = path.resolve(__dirname, '../package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
 // Check for updates
@@ -225,24 +225,24 @@ function setupCrashReporter() {
   }
   
   // Monkey patch logger methods
-  logger.info = function(...args: any[]) {
-    bufferLog('INFO', args[0]);
-    return originalInfo.apply(logger, args);
+  logger.info = function(msg: any, ...args: any[]) {
+    bufferLog('INFO', msg);
+    return originalInfo.call(logger, msg, ...args);
   };
   
-  logger.warn = function(...args: any[]) {
-    bufferLog('WARN', args[0]);
-    return originalWarn.apply(logger, args);
+  logger.warn = function(msg: any, ...args: any[]) {
+    bufferLog('WARN', msg);
+    return originalWarn.call(logger, msg, ...args);
   };
   
-  logger.error = function(...args: any[]) {
-    bufferLog('ERROR', args[0]);
-    return originalError.apply(logger, args);
+  logger.error = function(msg: any, ...args: any[]) {
+    bufferLog('ERROR', msg);
+    return originalError.call(logger, msg, ...args);
   };
   
-  logger.debug = function(...args: any[]) {
-    bufferLog('DEBUG', args[0]);
-    return originalDebug.apply(logger, args);
+  logger.debug = function(msg: any, ...args: any[]) {
+    bufferLog('DEBUG', msg);
+    return originalDebug.call(logger, msg, ...args);
   };
   
   // Handle uncaught exceptions

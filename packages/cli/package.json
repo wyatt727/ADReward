@@ -7,7 +7,9 @@
     "adreward": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint . --ext .ts,.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests"
   },
   "dependencies": {
     "@adreward/core": "workspace:*",
@@ -16,5 +18,7 @@
     "enquirer": "^2.4.1",
     "update-notifier": "^7.0.0"
   },
-  "devDependencies": {}
-} 
+  "devDependencies": {
+    "@types/node": "^24.0.4"
+  }
+}

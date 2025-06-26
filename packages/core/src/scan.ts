@@ -266,7 +266,7 @@ export async function scan(
     
     // Report worker pool utilization if timing is enabled
     if (options.showTimings) {
-      logger.info(`Worker pool utilization: ${(workerPool.getUtilization() * 100).toFixed(2)}%`);
+      logger.info('Worker pool run complete');
     }
     
     // Notify hooks when done

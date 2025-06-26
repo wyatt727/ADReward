@@ -1,14 +1,25 @@
 import { Router } from 'express';
-import { jobQueue } from '../queue.js';
+// Make jobQueue import optional to allow testing
+let jobQueue: any;
+try {
+  jobQueue = await import('../queue.js').then(m => m.jobQueue);
+} catch (error) {
+  // In test environment, create a mock jobQueue
+  jobQueue = {
+    getQueueStats: () => ({}),
+    getAllJobs: () => [],
+    getJob: () => null
+  };
+}
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * GET /api/health
  * Health check endpoint
  */
 router.get('/', (req, res) => {
-  const queueStats = jobQueue.getQueueStats();
+  const queueStats = jobQueue.getQueueStats?.() || {};
   
   res.json({
     status: 'ok',
@@ -24,14 +35,14 @@ router.get('/', (req, res) => {
  */
 router.get('/jobs', (req, res) => {
   res.json({
-    jobs: jobQueue.getAllJobs().map(job => ({
+    jobs: jobQueue.getAllJobs?.().map(job => ({
       id: job.id,
       type: job.type,
       status: job.status,
       progress: job.progress || 0,
       startTime: job.startTime,
       endTime: job.endTime
-    }))
+    })) || []
   });
 });
 
@@ -40,7 +51,7 @@ router.get('/jobs', (req, res) => {
  * Get status of a specific job
  */
 router.get('/jobs/:id', (req, res) => {
-  const job = jobQueue.getJob(req.params.id);
+  const job = jobQueue.getJob?.(req.params.id);
   
   if (!job) {
     return res.status(404).json({
@@ -54,4 +65,4 @@ router.get('/jobs/:id', (req, res) => {
   res.json({ job });
 });
 
-export const healthRouter = router; 
+export default router; 

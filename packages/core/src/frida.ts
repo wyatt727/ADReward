@@ -6,7 +6,7 @@ import Handlebars from 'handlebars';
 import { execAdb } from './adb.js';
 import { logger } from './utils/logger.js';
 import { tmpdir } from './utils/misc.js';
-import { retryPatternsFn } from './utils/retry.js';
+import { retryPatterns } from './utils/retry.js';
 import { ComponentMap } from './scan.js';
 import { pipelineHooks, FridaContext } from './hooks.js';
 
@@ -41,7 +41,7 @@ export async function ensureFridaServer(device: string): Promise<void> {
     }
     
     // Get Frida version from the host
-    const { stdout: fridaVersion } = await retryPatternsFn.network(() => 
+    const { stdout: fridaVersion } = await retryPatterns.network(() => 
       execa('frida', ['--version'])
     );
     const version = fridaVersion.trim();
@@ -62,7 +62,7 @@ export async function ensureFridaServer(device: string): Promise<void> {
     if (!fs.existsSync(downloadPath)) {
       logger.info(`Downloading Frida server from ${downloadUrl}`);
       
-      await retryPatternsFn.network(async () => {
+      await retryPatterns.network(async () => {
         const response = await axios({
           url: downloadUrl,
           method: 'GET',
