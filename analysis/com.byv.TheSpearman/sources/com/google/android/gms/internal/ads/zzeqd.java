@@ -1,0 +1,22 @@
+package com.google.android.gms.internal.ads;
+
+import android.os.Bundle;
+
+/* compiled from: com.google.android.gms:play-services-ads@@23.1.0 */
+/* loaded from: classes3.dex */
+public final class zzeqd implements zzewq {
+    private final Bundle zza;
+
+    zzeqd(Bundle bundle) {
+        this.zza = bundle;
+    }
+
+    @Override // com.google.android.gms.internal.ads.zzewq
+    public final /* bridge */ /* synthetic */ void zzj(Object obj) {
+        Bundle bundle = (Bundle) obj;
+        if (this.zza.isEmpty()) {
+            return;
+        }
+        bundle.putBundle("installed_adapter_data", this.zza);
+    }
+}

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "567931514586",
+    "project_id": "the-spearman-c8612",
+    "storage_bucket": "the-spearman-c8612.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567931514586:android:a42654798b88ddfc297fe3",
+        "android_client_info": {
+          "package_name": "com.byv.TheSpearman"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "567931514586-i5c6gg02cju82f7tv0s1adajpk9892eg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtuHqj1U9HdH86MAQRiGZI3gxIq3ZBe5g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "567931514586-i5c6gg02cju82f7tv0s1adajpk9892eg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "567931514586-gdi8agde3t679rseab6btl3qjr5410aq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.byv.TheSpearman",
+                "app_store_id": "1246675466"
+              }
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-3195712108693138~9914374967"
+    }
+  ],
+  "configuration_version": "1"
+}
